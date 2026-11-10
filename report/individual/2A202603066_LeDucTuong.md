@@ -57,15 +57,40 @@ Rework: không có rework, giữ nguyên bộ nhãn đã khóa; cột "Sau sửa
 | mAP50 |0.27225886498171903 |
 | mAP50–95 |0.20168300309748077 |
 
-Đặt cả 2 folder `assets/eval_predictions/` và `assets/yolo26_runs/` (giải nén từ `day2_colab_outputs.zip`) cạnh báo cáo và dẫn link tương đối. Không chỉ ghi số; chỉ ra ít nhất một ảnh và vật thể cụ thể.
+### Ảnh và kết quả huấn luyện
+
+- Ảnh dự đoán trên 10 ảnh eval:
+  [assets/eval_predictions/visuals/](assets/eval_predictions/visuals/)
+
+- Kết quả huấn luyện YOLO:
+  [assets/yolo26_runs/vehicle_annotation/](assets/yolo26_runs/vehicle_annotation/)
+
+- Kết quả đánh giá model:
+  [assets/yolo26_runs/vehicle_eval/](assets/yolo26_runs/vehicle_eval/)
 
 Trả lời bốn câu hỏi cuối notebook:
 
-1. Lớp nào recall thấp nhất? Ảnh nào minh họa?
+1. Lớp nào recall thấp nhất? Ảnh nào minh họa?Lớp	TP	Tổng ground truth	Recall
+car	84	94	0.8936
+truck	1	5	0.2000
+bus	0	2	0.0000
+van	0	12	0.0000
+Đây là ảnh dự đoán thực tế trong repo:
+
+ Xem drive_052.jpg – Prediction
+
+Trong ảnh:
+- Phương tiện lớn ở giữa ảnh được nhãn eval gán class van.
+- Mô hình lại dự đoán phương tiện này là bus với confidence 0.51.
+- Đây là ví dụ cụ thể về nhầm lẫn giữa hai lớp bus và van.
+Điều này cũng phù hợp với confusion matrix: có 11 trường hợp van bị dự đoán thành bus.
+
+Bus và van cùng có Recall bằng 0 tại ngưỡng này. Vì vậy, không nên khẳng định chỉ bus có Recall thấp nhất.
 2. Nếu mAP50 cao nhưng mAP50–95 thấp, cần kiểm điều gì trên box? Cần kiểm tra độ chính xác hình học của bounding box. mAP50 chỉ yêu cầu IoU đạt ngưỡng 0.5, trong khi mAP50–95 đánh giá ở nhiều ngưỡng IoU cao hơn. Vì vậy, chênh lệch lớn có thể cho thấy box dự đoán nhận diện đúng đối tượng nhưng chưa bám sát đường viền vật thể, box quá rộng, quá hẹp hoặc lệch vị trí.
 3. Lỗi class nào có thể liên quan guideline? Dữ kiện nào hỗ trợ nhận xét?Có thể xem xét lỗi phân biệt bus và van. Trong quá trình đối chiếu, tôi nhận thấy có sự khác biệt giữa gold labels và schema trong tài liệu: một số xe buýt lớn được gán class ID 3 trong gold, trong khi schema quy định class ID 2 là bus, class ID 3 là van. Ngoài ra, cách xử lý xe đỗ ven đường cũng có khác biệt giữa gold labels và hướng dẫn đã áp dụng. Đây là yếu tố cần được giảng viên làm rõ trước khi kết luận lỗi hoàn toàn xuất phát từ annotation hay mô hình.
 4. Vì sao không dùng 10 ảnh eval để train? Vai trò validation của chúng trong notebook là gì?
-Không sử dụng 10 ảnh eval để train nhằm giữ nguyên sự độc lập tương đối giữa dữ liệu huấn luyện và dữ liệu đánh giá, tránh rò rỉ dữ liệu. Trong notebook, 10 ảnh eval được sử dụng làm validation trong quá trình train để theo dõi hiệu suất và lựa chọn checkpoint best.pt, sau đó tiếp tục được dùng để đánh giá mô hình. Vì vậy, đây không phải test set độc lập.
+Không sử dụng 10 ảnh eval để train nhằm tránh việc mô hình học trực tiếp từ dữ liệu đánh giá, giúp hạn chế rò rỉ dữ liệu và giữ sự tách biệt giữa tập train và tập eval. Trong notebook, 10 ảnh eval được sử dụng làm validation để theo dõi hiệu suất mô hình qua các epoch và lựa chọn checkpoint best.pt. Sau đó, checkpoint tiếp tục được đánh giá trên tập eval này. Vì vậy, 10 ảnh eval không phải tập test độc lập hoàn toàn, do đã tham gia vào quá trình lựa chọn mô hình.
+
 ## 6. Khó khăn và cách xử lý
 
 | Bước/thời điểm | Lỗi quan sát | Cách đã thử | Kết quả/còn thiếu |
